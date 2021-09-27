@@ -1,0 +1,47 @@
+version: "3.3"
+
+services: 
+  jupyter:
+    build: 
+      context: ./
+      dockerfile: jupyter_Dockerfile
+    ports: 
+      - 8888:8888
+    volumes: 
+      - .:/notebooks
+    links: 
+      - mongo
+    networks:
+      - private
+      - public
+
+  mongo:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - private
+
+  db-ui:
+    image: mongo-express
+    restart: always
+    ports:
+      - 80:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+    links: 
+      - mongo
+    depends_on:
+      - mongo
+    networks:
+      - private
+      - public
+
+networks:
+  private:
+    driver: bridge
+  public:
+    external: true
